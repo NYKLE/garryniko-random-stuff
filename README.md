@@ -7,6 +7,6 @@ Repo for storing random usefulish assets for Unity.
 
 Round indicators for HP/MP, timers, counters, etc.
 
-Three type of shapes: "Standard" - flat ends; "Rounded" - round ends; "Sections" - standart flat ends with section spacing. Experimental "Rounded with sections". Fill direction: Clockwise; Anti-Clockwise; Arch (starts from top and closes to bottom by both sides). Property for angle offset, degrees, clockwise, 0 is up. Shape control by Diameter of circle and Thickness of line. Sections options: Amount of sections; Progress by sections (display progress with jump by sections); Sections spacing is percentage of section width. Progress by sections works with non-section type shapes.
+Three type of shapes: "Standard" - flat ends; "Rounded" - round ends; "Sections" - standard flat ends with section spacing. Experimental "Rounded with sections". Fill direction: Clockwise; Anti-Clockwise; Arch (starts from top and closes to bottom by sides). Property for angle offset, degrees, clockwise, 0 is up. Shape control by Diameter of outer circle and Thickness of line. Sections options: Amount of sections; Progress by sections (display progress with jumps by sections); Sections spacing (percentage of section width). Progress by sections works with non-section type shapes.
 
 ![alt text](readme/ProgressCircleBanner.gif?raw=true)
