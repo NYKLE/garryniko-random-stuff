@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 [AddComponentMenu("Scripts/Note")]
 public class NoteUtility : MonoBehaviour
@@ -17,10 +16,9 @@ public static class NoteCreator
     private static void CreateNoteObject()
     {
         GameObject GO = new GameObject("Note");
-        GO.transform.position = new Vector3(0,0,0);
-        var ico_asset = AssetDatabase.FindAssets("Ico_Note t:texture2D");  
-        Texture2D icon = (Texture2D)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(ico_asset[0]), typeof(Texture2D));
-        EditorGUIUtility.SetIconForObject(GO, (Texture2D)icon);
+        Camera cam = SceneView.lastActiveSceneView.camera;
+        GO.transform.position = cam.transform.position + cam.transform.forward*0.5f;
+        EditorGUIUtility.SetIconForObject(GO, NoteIcon.icon);
         NoteUtility NoteComponent = GO.AddComponent(typeof(NoteUtility)) as NoteUtility;
         GO.tag = "EditorOnly";
     }
@@ -29,12 +27,12 @@ public static class NoteCreator
 [CustomEditor(typeof(NoteUtility))]
 public class NoteComponentCustomEditor : Editor
 {
-    private static readonly string[] _dontIncludeMe = new string[]{"m_Script"};
+    private static readonly string dontInclude = new string("m_Script");
     
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
-        DrawPropertiesExcluding(serializedObject, _dontIncludeMe);
+        DrawPropertiesExcluding(serializedObject, dontInclude);
         EditorGUILayout.PropertyField(this.serializedObject.FindProperty("NoteText"), GUIContent.none);
         serializedObject.ApplyModifiedProperties();
     }
@@ -43,6 +41,9 @@ public class NoteComponentCustomEditor : Editor
 [InitializeOnLoad]
 public class NoteIcon
 {
+    static MonoScript script = MonoScript.FromMonoBehaviour((MonoBehaviour)GameObject.FindObjectOfType(typeof(NoteUtility)));
+    public static Texture2D icon;
+
     static NoteIcon()
     {
         AssemblyReloadEvents.afterAssemblyReload += OnAfterAssemblyReload;
@@ -53,19 +54,15 @@ public class NoteIcon
     {
         EditorApplication.delayCall += () =>
         {
-            var ico_asset = AssetDatabase.FindAssets("Ico_Note t:texture2D");  
+            NoteIcon.icon = AssetDatabase.LoadAssetAtPath<Texture2D>(Path.GetDirectoryName(AssetDatabase.GetAssetPath(script)) + "\\Ico_Note.png");
 
-            if (ico_asset.Length > 0)
+            if (icon)
             {
-                Texture2D icon = (Texture2D)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(ico_asset[0]), typeof(Texture2D));
-                var script_asset = AssetDatabase.FindAssets("NoteUtility t:script");  
-                UnityEngine.Object script = (UnityEngine.Object)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(script_asset[0]), typeof(UnityEngine.Object));
-                EditorGUIUtility.SetIconForObject(script, (Texture2D)icon);
-            }
+                EditorGUIUtility.SetIconForObject(script, icon);
+            } 
             else
             {
-                Debug.Log("Ico_Note.png is missing, it should be placed in the same folder as this script.");
-                
+                Debug.Log("<color=#ffa500ff>Ico_Note.png is missing, it should be placed in the same folder as NoteUtility script.</color> \n>>>\nIcon is not always displayed in the <color=#008000ff><b>Project window</b></color>. However, if Note object in scene changed it's icon properly that indicate that everything is working fine. Icon will be shown evetyally.\n>>>");
             }
         };
     }
@@ -74,10 +71,10 @@ public class NoteIcon
     {
         EditorApplication.hierarchyWindowItemOnGUI += (int instanceID, Rect selectionRect) =>
         {
-            var content = EditorGUIUtility.ObjectContent(EditorUtility.InstanceIDToObject(instanceID), null);
+            GameObject GO = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 
-            if (content.image != null && content.image.name == "Ico_Note")
-                GUI.DrawTexture(new Rect(selectionRect.xMin, selectionRect.yMin, 16, 16), content.image);
+            if (GO != null && GO.GetComponent<NoteUtility>() != null)
+                GUI.DrawTexture(new Rect(selectionRect.xMin, selectionRect.yMin, 16, 16), icon);
         };
     }
 }
